@@ -29,6 +29,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final KeluargaRepository keluargaRepository;
+    private final com.DigitalVillageHub.demo.config.JwtUtil jwtUtil;
 
     public AuthResponse register(RegisterRequest request) {
 
@@ -94,10 +95,12 @@ public class AuthService {
             throw new RuntimeException("Pendaftaran Anda ditolak Admin RT/RW. Silakan hubungi Admin untuk informasi lebih lanjut.");
         }
 
+        String jwtToken = jwtUtil.generateToken(user.getId(), user.getRole().name());
+
         return AuthResponse.builder()
                 .success(true)
                 .message("Login Berhasil!")
-                .token("DEV-TOKEN-" + user.getId())
+                .token(jwtToken)
                 .user(Map.of(
                         "id", user.getId(),
                         "nik", user.getNik(),

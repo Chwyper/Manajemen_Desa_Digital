@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.Authentication;
+
 import java.util.Map;
 
 @RestController
@@ -40,7 +42,21 @@ public class ReportController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getReportsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getReportsByUserId(
+            @PathVariable Long userId,
+            Authentication authentication
+    ) {
+        Long tokenUserId = Long.parseLong(authentication.getName());
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!userId.equals(tokenUserId) && !isAdmin) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "Akses ditolak"
+            ));
+        }
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", reportService.getReportsByUserId(userId)
@@ -58,8 +74,20 @@ public class ReportController {
     @PostMapping("/user/{userId}")
     public ResponseEntity<?> createReport(
             @PathVariable Long userId,
-            @RequestBody Report report
+            @RequestBody Report report,
+            Authentication authentication
     ) {
+        Long tokenUserId = Long.parseLong(authentication.getName());
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!userId.equals(tokenUserId) && !isAdmin) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "Akses ditolak"
+            ));
+        }
+
         try {
             return ResponseEntity.status(201).body(Map.of(
                     "success", true,

@@ -50,18 +50,17 @@ public class WargaPengaduanController {
 
     @GetMapping("/riwayat")
     public ResponseEntity<Map<String, Object>> riwayatPengaduan(
-            Authentication authentication,
-            @RequestHeader(value = "Authorization", required = false) String authorization
+            Authentication authentication
     ) {
         try {
-            String principal = resolvePrincipal(authentication, authorization);
-            if (principal == null || principal.isBlank()) {
+            if (authentication == null || !authentication.isAuthenticated() || authentication.getName() == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                         SUCCESS, false,
                         MESSAGE, "Tidak terautentikasi. Silakan login ulang."
                 ));
             }
 
+            String principal = authentication.getName();
             return ResponseEntity.ok(Map.of(
                     SUCCESS, true,
                     DATA, pengaduanService.getRiwayatWargaByPrincipal(principal)
@@ -71,34 +70,6 @@ public class WargaPengaduanController {
                     SUCCESS, false,
                     MESSAGE, e.getMessage()
             ));
-        }
-    }
-
-    private String resolvePrincipal(Authentication authentication, String authorization) {
-        if (authentication != null && authentication.isAuthenticated() && authentication.getName() != null) {
-            return authentication.getName();
-        }
-
-        if (authorization == null || authorization.isBlank()) {
-            return null;
-        }
-
-        String trimmed = authorization.trim();
-        if (!trimmed.startsWith("Bearer ")) {
-            return null;
-        }
-
-        String token = trimmed.substring("Bearer ".length());
-        if (!token.startsWith("DEV-TOKEN-")) {
-            return null;
-        }
-
-        String idPart = token.substring("DEV-TOKEN-".length());
-        try {
-            Long.parseLong(idPart);
-            return idPart;
-        } catch (NumberFormatException e) {
-            return null;
         }
     }
 }

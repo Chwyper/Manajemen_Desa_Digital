@@ -14,7 +14,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // Dibaca dari environment variable JWT_SECRET yang sudah ditambahkan di Stage 1
+    // Dibaca dari environment variable JWT_SECRET 
     @Value("${JWT_SECRET}")
     private String jwtSecret;
 

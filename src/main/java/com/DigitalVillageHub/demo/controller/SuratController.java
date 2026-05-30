@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.Authentication;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +44,21 @@ public class SuratController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getSuratByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getSuratByUserId(
+            @PathVariable Long userId,
+            Authentication authentication
+    ) {
+        Long tokenUserId = Long.parseLong(authentication.getName());
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!userId.equals(tokenUserId) && !isAdmin) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "Akses ditolak"
+            ));
+        }
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", suratService.getSuratByUserId(userId)
@@ -52,8 +68,20 @@ public class SuratController {
     @PostMapping("/user/{userId}")
     public ResponseEntity<?> createSurat(
             @PathVariable Long userId,
-            @RequestBody Surat surat
+            @RequestBody Surat surat,
+            Authentication authentication
     ) {
+        Long tokenUserId = Long.parseLong(authentication.getName());
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!userId.equals(tokenUserId) && !isAdmin) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "Akses ditolak"
+            ));
+        }
+
         try {
             return ResponseEntity.status(201).body(Map.of(
                     "success", true,
@@ -69,7 +97,21 @@ public class SuratController {
     }
 
     @PostMapping("/ajukan")
-    public ResponseEntity<?> handleAjukanSurat(@RequestBody AjukanSuratRequestDTO requestDTO) {
+    public ResponseEntity<?> handleAjukanSurat(
+            @RequestBody AjukanSuratRequestDTO requestDTO,
+            Authentication authentication
+    ) {
+        Long tokenUserId = Long.parseLong(authentication.getName());
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!requestDTO.getWargaId().equals(tokenUserId) && !isAdmin) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "Akses ditolak"
+            ));
+        }
+
         try {
             Surat savedSurat = suratService.ajukanSuratWarga(requestDTO);
 

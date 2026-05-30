@@ -29,6 +29,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final KeluargaRepository keluargaRepository;
+    private final com.DigitalVillageHub.demo.config.JwtUtil jwtUtil;
 
     public AuthResponse register(RegisterRequest request) {
 
@@ -94,10 +95,12 @@ public class AuthService {
             throw new RuntimeException("Pendaftaran Anda ditolak Admin RT/RW. Silakan hubungi Admin untuk informasi lebih lanjut.");
         }
 
+        String jwtToken = jwtUtil.generateToken(user.getId(), user.getRole().name());
+
         return AuthResponse.builder()
                 .success(true)
                 .message("Login Berhasil!")
-                .token("DEV-TOKEN-" + user.getId())
+                .token(jwtToken)
                 .user(Map.of(
                         "id", user.getId(),
                         "nik", user.getNik(),
@@ -245,21 +248,34 @@ public class AuthService {
     }
 
     private String storeKtpEvidence(String nik, MultipartFile evidence) {
+        String contentType = evidence.getContentType();
+        if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png") || contentType.equals("application/pdf"))) {
+            throw new RuntimeException("Tipe file tidak didukung. Harap unggah JPEG, PNG, atau PDF.");
+        }
+
+        String originalName = evidence.getOriginalFilename();
+        if (originalName == null || originalName.isBlank()) {
+            throw new RuntimeException("Nama file tidak valid");
+        }
+
+        String lowerCaseName = originalName.toLowerCase();
+        if (!lowerCaseName.endsWith(".jpg") && !lowerCaseName.endsWith(".jpeg") && !lowerCaseName.endsWith(".png") && !lowerCaseName.endsWith(".pdf")) {
+            throw new RuntimeException("Ekstensi file tidak diizinkan. Harap unggah .jpg, .jpeg, .png, atau .pdf.");
+        }
+
+        String extension = "";
+        int dotIndex = originalName.lastIndexOf('.');
+        if (dotIndex > 0) {
+            extension = originalName.substring(dotIndex);
+        } else {
+            throw new RuntimeException("Ekstensi file tidak ditemukan");
+        }
+
         try {
             Path uploadDir = Paths.get("uploads", "ktp");
             Files.createDirectories(uploadDir);
 
-            String originalName = evidence.getOriginalFilename();
-            if (originalName == null || originalName.isBlank()) {
-                originalName = "evidence";
-            }
-
-            String safeOriginal = originalName
-                    .replace("\\", "_")
-                    .replace("/", "_")
-                    .replace(":", "_");
-
-            String fileName = nik + "_" + System.currentTimeMillis() + "_" + safeOriginal;
+            String fileName = "ktp_" + java.util.UUID.randomUUID().toString() + extension;
             Path target = uploadDir.resolve(fileName);
 
             try (var in = evidence.getInputStream()) {

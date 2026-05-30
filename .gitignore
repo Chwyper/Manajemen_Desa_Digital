@@ -56,3 +56,4 @@ uploads/ktp/*
 lombok.jar
 src/main/resources/application.properties
 .env
+/personal/

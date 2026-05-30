@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final DevTokenAuthenticationFilter devTokenFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final SecurityAccessDeniedHandler accessDeniedHandler;
 
     @Bean
@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .anyRequest().permitAll()
             )
             // Masukkan filter kustom SEBELUM filter username/password bawaan Spring
-            .addFilterBefore(devTokenFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -16,7 +16,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"}) // <-- Diperluas agar aman di kedua port
 public class AuthController {
 
     private final AuthService authService;
@@ -68,32 +67,6 @@ public class AuthController {
         if (authentication != null && authentication.isAuthenticated() && authentication.getName() != null) {
             return authentication.getName();
         }
-
-        Long userId = parseDevTokenUserId(authorization);
-        if (userId == null) {
-            return null;
-        }
-
-        return String.valueOf(userId);
-    }
-
-    private Long parseDevTokenUserId(String authorization) {
-        if (authorization == null || authorization.isBlank()) {
-            return null;
-        }
-        String trimmed = authorization.trim();
-        if (!trimmed.startsWith("Bearer ")) {
-            return null;
-        }
-        String token = trimmed.substring("Bearer ".length());
-        if (!token.startsWith("DEV-TOKEN-")) {
-            return null;
-        }
-        String idPart = token.substring("DEV-TOKEN-".length());
-        try {
-            return Long.parseLong(idPart);
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return null;
     }
 }

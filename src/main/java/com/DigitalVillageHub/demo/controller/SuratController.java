@@ -2,6 +2,8 @@ package com.DigitalVillageHub.demo.controller;
 
 import com.DigitalVillageHub.demo.model.dto.AjukanSuratRequestDTO;
 import com.DigitalVillageHub.demo.model.entity.Surat;
+import com.DigitalVillageHub.demo.model.entity.User;
+import com.DigitalVillageHub.demo.persistence.UserRepository;
 import com.DigitalVillageHub.demo.service.SuratService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import java.util.Map;
 public class SuratController {
 
     private final SuratService suratService;
+    private final UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity<?> getAllSurat() {
@@ -105,7 +108,10 @@ public class SuratController {
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        if (!requestDTO.getWargaId().equals(tokenUserId) && !isAdmin) {
+        User user = userRepository.findById(tokenUserId)
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+
+        if (!user.getNik().equals(requestDTO.getNik()) && !isAdmin) {
             return ResponseEntity.status(403).body(Map.of(
                     "success", false,
                     "message", "Akses ditolak"

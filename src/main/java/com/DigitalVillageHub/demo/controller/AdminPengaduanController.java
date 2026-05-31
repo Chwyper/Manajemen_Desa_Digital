@@ -20,7 +20,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin/pengaduan")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class AdminPengaduanController {
 
     private static final String SUCCESS = "success";

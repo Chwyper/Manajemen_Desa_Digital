@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
+import com.DigitalVillageHub.demo.model.enums.StatusAkun;
+import com.DigitalVillageHub.demo.model.enums.StatusHubungan;
+import com.DigitalVillageHub.demo.model.enums.StatusTinggal;
+import com.DigitalVillageHub.demo.config.StatusHubunganConverter;
 
 import java.time.LocalDateTime;
 
@@ -56,16 +60,19 @@ public class User {
     private String rw;
 
     @JsonProperty("status_akun")
+    @Enumerated(EnumType.STRING)
     @Column(name = "status_akun", length = 30)
-    private String statusAkun;
+    private StatusAkun statusAkun;
 
     @JsonProperty("status_hubungan")
+    @Convert(converter = StatusHubunganConverter.class)
     @Column(name = "status_hubungan", length = 30)
-    private String statusHubungan;
+    private StatusHubungan statusHubungan;
 
     @JsonProperty("status_tinggal")
+    @Enumerated(EnumType.STRING)
     @Column(name = "status_tinggal", length = 20)
-    private String statusTinggal;
+    private StatusTinggal statusTinggal;
 
     @JsonProperty("foto_ktp")
     @Column(name = "foto_ktp")
@@ -126,6 +133,6 @@ public class User {
     public void prePersist() {
         if (createdAt == null) createdAt = LocalDateTime.now();
         if (role == null) role = Role.WARGA;
-        if (statusAkun == null) statusAkun = "INCOMPLETE";
+        if (statusAkun == null) statusAkun = StatusAkun.INCOMPLETE;
     }
 }

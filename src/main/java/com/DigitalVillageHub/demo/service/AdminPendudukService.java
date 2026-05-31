@@ -3,6 +3,7 @@ package com.DigitalVillageHub.demo.service;
 import com.DigitalVillageHub.demo.dto.VerifikasiWargaDTO;
 import com.DigitalVillageHub.demo.model.entity.User;
 import com.DigitalVillageHub.demo.persistence.UserRepository;
+import com.DigitalVillageHub.demo.model.enums.StatusAkun;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -48,8 +49,8 @@ public class AdminPendudukService {
             request.setRole(User.Role.WARGA);
         }
 
-        if (request.getStatusAkun() == null || request.getStatusAkun().isBlank()) {
-            request.setStatusAkun("APPROVED");
+        if (request.getStatusAkun() == null) {
+            request.setStatusAkun(StatusAkun.APPROVED);
         }
 
         return userRepository.save(request);
@@ -83,9 +84,10 @@ public class AdminPendudukService {
     public User verifyPenduduk(Long id, String statusAkun, String alasanDitolak) {
         User user = getPendudukById(id);
 
-        user.setStatusAkun(statusAkun);
+        StatusAkun enumStatus = StatusAkun.valueOf(statusAkun.toUpperCase());
+        user.setStatusAkun(enumStatus);
 
-        if ("REJECTED".equalsIgnoreCase(statusAkun)) {
+        if (enumStatus == StatusAkun.REJECTED) {
             user.setAlasanDitolak(alasanDitolak);
         } else {
             user.setAlasanDitolak(null);
@@ -107,22 +109,20 @@ public class AdminPendudukService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Warga tidak ditemukan"));
 
-        String statusAkun = dto != null && dto.getStatusAkun() != null
-                ? dto.getStatusAkun().trim().toUpperCase()
-                : "";
-
-        if (statusAkun.isBlank()) {
+        if (dto == null || dto.getStatusAkun() == null) {
             throw new RuntimeException("Status akun wajib diisi");
         }
 
-        if (!"VERIFIED".equals(statusAkun) && !"DATA_REJECTED".equals(statusAkun)) {
+        StatusAkun statusAkun = dto.getStatusAkun();
+
+        if (statusAkun != StatusAkun.VERIFIED && statusAkun != StatusAkun.DATA_REJECTED) {
             throw new RuntimeException("Status akun tidak valid. Gunakan VERIFIED atau DATA_REJECTED");
         }
 
         user.setStatusAkun(statusAkun);
 
-        if ("DATA_REJECTED".equals(statusAkun)) {
-            user.setAlasanDitolak(dto != null ? dto.getAlasanDitolak() : null);
+        if (statusAkun == StatusAkun.DATA_REJECTED) {
+            user.setAlasanDitolak(dto.getAlasanDitolak());
         } else {
             user.setAlasanDitolak(null);
         }

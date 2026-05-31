@@ -8,6 +8,9 @@ import com.DigitalVillageHub.demo.model.entity.Keluarga;
 import com.DigitalVillageHub.demo.model.entity.User;
 import com.DigitalVillageHub.demo.persistence.KeluargaRepository;
 import com.DigitalVillageHub.demo.persistence.UserRepository;
+import com.DigitalVillageHub.demo.model.enums.StatusAkun;
+import com.DigitalVillageHub.demo.model.enums.StatusHubungan;
+import com.DigitalVillageHub.demo.model.enums.StatusTinggal;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -60,7 +63,7 @@ public class AuthService {
                 .password(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()))
                 .noHp(request.getNoHp())
                 .role(User.Role.WARGA)
-                .statusAkun("INCOMPLETE")
+                .statusAkun(StatusAkun.INCOMPLETE)
                 .build();
 
         userRepository.save(user);
@@ -90,8 +93,8 @@ public class AuthService {
             throw new RuntimeException("Password salah");
         }
 
-        String statusAkun = user.getStatusAkun() != null ? user.getStatusAkun().trim().toUpperCase() : "";
-        if ("REJECTED_ADMIN".equals(statusAkun)) {
+        StatusAkun statusAkun = user.getStatusAkun();
+        if (statusAkun == StatusAkun.REJECTED_ADMIN) {
             throw new RuntimeException("Pendaftaran Anda ditolak Admin RT/RW. Silakan hubungi Admin untuk informasi lebih lanjut.");
         }
 
@@ -124,8 +127,8 @@ public class AuthService {
         data.put("status_akun", user.getStatusAkun());
         data.put("alasan_ditolak", user.getAlasanDitolak());
         data.put("no_kk", user.getNoKk());
-        data.put("status_hubungan", user.getStatusHubungan());
-        data.put("status_tinggal", user.getStatusTinggal());
+        data.put("status_hubungan", user.getStatusHubungan() != null ? user.getStatusHubungan().getLabel() : null);
+        data.put("status_tinggal", user.getStatusTinggal() != null ? user.getStatusTinggal().name() : null);
         data.put("alamat", user.getAlamat()); 
         data.put("rt", user.getRt());         
         data.put("rw", user.getRw());         
@@ -189,13 +192,13 @@ public class AuthService {
         String storedPath = storeKtpEvidence(user.getNik(), evidence);
 
         user.setNoKk(noKk);
-        user.setStatusHubungan(statusHubungan);
-        user.setStatusTinggal(statusTinggal);
+        user.setStatusHubungan(StatusHubungan.fromString(statusHubungan));
+        user.setStatusTinggal(StatusTinggal.valueOf(statusTinggal.toUpperCase()));
         user.setAlamat(request.getAlamat().trim()); 
         user.setRt(request.getRt().trim());         
         user.setRw(request.getRw().trim());         
         user.setFotoKtp(storedPath);
-        user.setStatusAkun("PENDING_VERIFICATION");
+        user.setStatusAkun(StatusAkun.PENDING_VERIFICATION);
 
         userRepository.save(user);
 

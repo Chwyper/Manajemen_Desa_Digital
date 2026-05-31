@@ -12,7 +12,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"}) // <-- Menyelaraskan izin CORS lintas port
 public class UserController {
 
     private final UserService userService;

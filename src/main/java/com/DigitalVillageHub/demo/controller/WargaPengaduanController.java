@@ -14,7 +14,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/warga/pengaduan")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class WargaPengaduanController {
 
     private static final String SUCCESS = "success";

@@ -14,7 +14,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin/surat")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class AdminSuratController {
 
     private final AdminSuratService adminSuratService;

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.DigitalVillageHub.demo.model.enums.StatusAkun;
 
 @Getter
 @Setter
@@ -17,7 +18,7 @@ public class VerifikasiWargaDTO {
      * Menerima nilai status verifikasi dari frontend.
      * Contoh: "VERIFIED" atau "DATA_REJECTED".
      */
-    private String statusAkun;
+    private StatusAkun statusAkun;
 
     /**
      * Alasan penolakan jika status akun adalah "DATA_REJECTED".

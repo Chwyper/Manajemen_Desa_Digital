@@ -76,7 +76,7 @@ public class AdminSuratService {
                     .noKk(user.getNoKk())
                     .rt(user.getRt())
                     .rw(user.getRw())
-                    .statusDomisili(user.getStatusTinggal())
+                    .statusDomisili(user.getStatusTinggal() != null ? user.getStatusTinggal().name() : null)
                     .alamat(user.getAlamat())
                     .statusAkun(user.getStatusAkun())
                     .build();

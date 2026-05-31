@@ -11,7 +11,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/finances")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class FinanceController {
 
     private final FinanceService financeService;

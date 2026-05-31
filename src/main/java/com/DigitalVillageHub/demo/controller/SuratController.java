@@ -17,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping({"/api/v1/surat", "/api/v1/warga/surat"})
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class SuratController {
 
     private final SuratService suratService;

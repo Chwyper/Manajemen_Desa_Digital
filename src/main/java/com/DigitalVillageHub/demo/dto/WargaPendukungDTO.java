@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.DigitalVillageHub.demo.model.enums.StatusAkun;
 
 @Getter
 @Setter
@@ -29,5 +30,5 @@ public class WargaPendukungDTO {
 
     private String alamat;
 
-    private String statusAkun;
+    private StatusAkun statusAkun;
 }

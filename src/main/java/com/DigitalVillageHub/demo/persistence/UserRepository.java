@@ -1,6 +1,7 @@
 package com.DigitalVillageHub.demo.persistence;
 
 import com.DigitalVillageHub.demo.model.entity.User;
+import com.DigitalVillageHub.demo.model.enums.StatusAkun;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -20,5 +21,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByRole(User.Role role);
 
-    List<User> findByStatusAkun(String statusAkun);
+    List<User> findByStatusAkun(StatusAkun statusAkun);
 }

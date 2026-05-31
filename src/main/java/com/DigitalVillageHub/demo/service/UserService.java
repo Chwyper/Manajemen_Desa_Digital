@@ -4,6 +4,7 @@ import com.DigitalVillageHub.demo.model.entity.User;
 import com.DigitalVillageHub.demo.model.entity.Wilayah;
 import com.DigitalVillageHub.demo.persistence.UserRepository;
 import com.DigitalVillageHub.demo.persistence.WilayahRepository;
+import com.DigitalVillageHub.demo.model.enums.StatusAkun;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class UserService {
         return userRepository.findByRole(User.Role.WARGA);
     }
 
-    public List<User> getUsersByStatusAkun(String statusAkun) {
+    public List<User> getUsersByStatusAkun(StatusAkun statusAkun) {
         return userRepository.findByStatusAkun(statusAkun);
     }
 
@@ -55,7 +56,7 @@ public class UserService {
                 .rt(request.getRt())
                 .rw(request.getRw())
                 .role(request.getRole() == null ? User.Role.WARGA : request.getRole())
-                .statusAkun(request.getStatusAkun() == null ? "INCOMPLETE" : request.getStatusAkun())
+                .statusAkun(request.getStatusAkun() == null ? StatusAkun.INCOMPLETE : request.getStatusAkun())
                 .statusHubungan(request.getStatusHubungan())
                 .statusTinggal(request.getStatusTinggal())
                 .fotoKtp(request.getFotoKtp())
@@ -107,14 +108,14 @@ public class UserService {
 
     public User approveUser(Long id) {
         User user = getUserById(id);
-        user.setStatusAkun("APPROVED");
+        user.setStatusAkun(StatusAkun.APPROVED);
         user.setAlasanDitolak(null);
         return userRepository.save(user);
     }
 
     public User rejectUser(Long id, String alasanDitolak) {
         User user = getUserById(id);
-        user.setStatusAkun("REJECTED");
+        user.setStatusAkun(StatusAkun.REJECTED);
         user.setAlasanDitolak(alasanDitolak);
         return userRepository.save(user);
     }

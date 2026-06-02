@@ -8,6 +8,8 @@
 
 **Digital Village Hub (Desa Digital)** adalah platform *full-stack* modern yang dirancang untuk mendigitalisasi layanan administrasi desa. Warga desa dapat mengajukan surat resmi secara mandiri, menyampaikan pengaduan atau aspirasi dengan lampiran berkas yang aman, sementara staf administrasi desa dapat mengelola data kependudukan, keuangan desa, permohonan surat, laporan, serta mengekspor data dalam format Excel dan PDF.
 
+> 📝 **Catatan Rilis (Release Notes)**: Untuk melihat pembaruan dan perbaikan bug terbaru, silakan baca [CHANGELOG.md](./CHANGELOG.md).
+
 ---
 
 ## ✨ Fitur Utama

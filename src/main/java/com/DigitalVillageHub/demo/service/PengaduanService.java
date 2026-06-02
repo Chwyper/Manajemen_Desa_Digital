@@ -45,7 +45,7 @@ public class PengaduanService {
     }
 
     @Transactional
-    public PengaduanResponseDTO ajukanLaporan(AjukanPengaduanRequestDTO dto) {
+    public PengaduanResponseDTO ajukanLaporan(AjukanPengaduanRequestDTO dto, org.springframework.web.multipart.MultipartFile fotoBuktiFile) {
         try {
             validateAjukanRequest(dto);
 
@@ -55,6 +55,11 @@ public class PengaduanService {
 
             Pengaduan.PrioritasPengaduan prioritas = resolvePrioritas(dto.getPrioritas());
 
+            String fotoBuktiPath = null;
+            if (fotoBuktiFile != null && !fotoBuktiFile.isEmpty()) {
+                fotoBuktiPath = storePengaduanEvidence(fotoBuktiFile);
+            }
+
             Pengaduan pengaduan = Pengaduan.builder()
                     .kodePengaduan(generateKodePengaduan())
                     .judul(dto.getJudul().trim())
@@ -62,7 +67,7 @@ public class PengaduanService {
                     .deskripsi(dto.getDeskripsi().trim())
                     .lokasi(dto.getLokasi() != null ? dto.getLokasi().trim() : null)
                     .prioritas(prioritas)
-                    .fotoBukti(dto.getFotoBukti())
+                    .fotoBukti(fotoBuktiPath)
                     .status(Pengaduan.StatusPengaduan.PENDING)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
@@ -275,5 +280,46 @@ public class PengaduanService {
                 .substring(0, 8)
                 .toUpperCase(Locale.ROOT);
         return "PGD-" + tanggal + uuid8;
+    }
+
+    private String storePengaduanEvidence(org.springframework.web.multipart.MultipartFile evidence) {
+        String contentType = evidence.getContentType();
+        if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
+            throw new RuntimeException("Tipe file tidak didukung. Harap unggah JPEG atau PNG.");
+        }
+
+        String originalName = evidence.getOriginalFilename();
+        if (originalName == null || originalName.isBlank()) {
+            throw new RuntimeException("Nama file tidak valid");
+        }
+
+        String lowerCaseName = originalName.toLowerCase();
+        if (!lowerCaseName.endsWith(".jpg") && !lowerCaseName.endsWith(".jpeg") && !lowerCaseName.endsWith(".png")) {
+            throw new RuntimeException("Ekstensi file tidak diizinkan. Harap unggah .jpg, .jpeg, atau .png.");
+        }
+
+        String extension = "";
+        int dotIndex = originalName.lastIndexOf('.');
+        if (dotIndex > 0) {
+            extension = originalName.substring(dotIndex);
+        } else {
+            throw new RuntimeException("Ekstensi file tidak ditemukan");
+        }
+
+        try {
+            java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads", "pengaduan");
+            java.nio.file.Files.createDirectories(uploadDir);
+
+            String fileName = "pengaduan_" + java.util.UUID.randomUUID().toString() + extension;
+            java.nio.file.Path target = uploadDir.resolve(fileName);
+
+            try (var in = evidence.getInputStream()) {
+                java.nio.file.Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            return "/uploads/pengaduan/" + fileName;
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Gagal menyimpan berkas foto bukti");
+        }
     }
 }

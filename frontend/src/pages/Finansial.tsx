@@ -349,6 +349,27 @@ export default function Finansial() {
     loadFinance();
   }, []);
 
+  const expenseCategories = financeData.transactions
+    .filter((t) => (t.type || "").toUpperCase() === "EXPENSE" || (t.type || "").toUpperCase() === "PENGELUARAN")
+    .reduce((acc, t) => {
+      const cat = t.category || "Operasional";
+      acc[cat] = (acc[cat] || 0) + toNumber(t.amount);
+      return acc;
+    }, {} as Record<string, number>);
+
+  const categoryStats = Object.entries(expenseCategories)
+    .map(([label, val]) => ({
+      label,
+      val: financeData.summary.total_expense > 0 ? Math.round((val / financeData.summary.total_expense) * 100) : 0,
+      color: getBarColor(label) || "bg-amber-500",
+    }))
+    .sort((a, b) => b.val - a.val)
+    .slice(0, 3); // Top 3 categories
+
+  const totalIncome = financeData.summary.total_income;
+  const targetPenyerapan = totalIncome > 0 ? ((financeData.summary.total_expense / totalIncome) * 100).toFixed(1) : "0.0";
+
+
   const filteredTransactions = financeData.transactions.filter((t) => {
     if (!t) return false;
     const type = String(t.type || "").toUpperCase();
@@ -453,18 +474,20 @@ export default function Finansial() {
                   Statistik Belanja
                 </h3>
                 <div className="space-y-5">
-                  <SummaryBar label="Infrastruktur" value={45} color={getBarColor("Infrastruktur")} />
-                  <SummaryBar label="Bantuan Sosial" value={30} color={getBarColor("Bantuan Sosial")} />
-                  <SummaryBar label="Operasional" value={25} color={getBarColor("Operasional")} />
+                  {categoryStats.length > 0 ? categoryStats.map((item) => (
+                    <SummaryBar key={item.label} label={item.label} value={item.val} color={item.color} />
+                  )) : (
+                    <p className="text-sm text-slate-500 text-center py-4">Belum ada data pengeluaran</p>
+                  )}
                 </div>
               </div>
 
               <div className="bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden">
                 <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-red-600/20 rounded-full blur-3xl" />
                 <h4 className="text-sm font-semibold mb-2 text-slate-400">Target penyerapan anggaran</h4>
-                <p className="text-4xl font-bold tracking-tight leading-none">94.2%</p>
+                <p className="text-4xl font-bold tracking-tight leading-none">{targetPenyerapan}%</p>
                 <div className="mt-6 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-red-500 w-[94.2%] rounded-full" />
+                  <div className="h-full bg-red-500 rounded-full" style={{ width: `${targetPenyerapan}%` }} />
                 </div>
                 <p className="text-xs font-medium mt-4 text-slate-400">Monitoring Kas DigiDesa v1.0</p>
               </div>

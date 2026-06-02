@@ -22,9 +22,10 @@ public class WargaPengaduanController {
 
     private final PengaduanService pengaduanService;
 
-    @PostMapping
+    @PostMapping(consumes = {org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Map<String, Object>> ajukanLaporan(
-            @RequestBody AjukanPengaduanRequestDTO request,
+            @ModelAttribute AjukanPengaduanRequestDTO request,
+            @RequestParam(value = "foto_bukti", required = false) org.springframework.web.multipart.MultipartFile fotoBuktiFile,
             Authentication authentication
     ) {
         try {
@@ -33,7 +34,7 @@ public class WargaPengaduanController {
                 request.setNik(authentication.getName());
             }
 
-            PengaduanResponseDTO data = pengaduanService.ajukanLaporan(request);
+            PengaduanResponseDTO data = pengaduanService.ajukanLaporan(request, fotoBuktiFile);
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                         SUCCESS, true,
                         MESSAGE, "Pengaduan berhasil diajukan",

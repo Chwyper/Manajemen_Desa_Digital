@@ -44,6 +44,7 @@ export default function Lapor() {
     deskripsi: "",
     lokasi: "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleKirimPengaduan = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -56,14 +57,22 @@ export default function Lapor() {
 
     setIsSubmitting(true);
     try {
-      const payload = {
-        judul: formData.judul.trim(),
-        kategori: formData.kategori,
-        deskripsi: formData.deskripsi.trim(),
-        lokasi: formData.lokasi.trim() ? formData.lokasi.trim() : null,
-      };
+      const payload = new FormData();
+      payload.append("judul", formData.judul.trim());
+      payload.append("kategori", formData.kategori);
+      payload.append("deskripsi", formData.deskripsi.trim());
+      if (formData.lokasi.trim()) {
+        payload.append("lokasi", formData.lokasi.trim());
+      }
+      if (imageFile) {
+        payload.append("foto_bukti", imageFile);
+      }
 
-      const response = await api.post("/warga/pengaduan", payload);
+      const response = await api.post("/warga/pengaduan", payload, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
       if (response.data?.success === false) {
         throw new Error(response.data?.message || "Gagal mengirim pengaduan");
       }
@@ -227,18 +236,19 @@ export default function Lapor() {
                     />
                   </div>
 
-                  <div className="rounded-[2rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-7 transition-all hover:border-blue-300 hover:bg-red-50/40">
-                    <div className="flex flex-col items-center text-center">
-                      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
-                        <ImageIcon size={22} />
+                  <div className="relative rounded-[2rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-7 transition-all hover:border-blue-300 hover:bg-red-50/40 cursor-pointer overflow-hidden group">
+                    <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <div className="flex flex-col items-center text-center relative z-0">
+                      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm group-hover:text-red-500 transition-colors">
+                        {imageFile ? <img src={URL.createObjectURL(imageFile)} className="w-full h-full object-cover rounded-2xl" alt="Preview" /> : <ImageIcon size={22} />}
                       </div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Unggah bukti foto opsional</p>
-                      <p className="mt-2 max-w-md text-xs font-medium leading-relaxed text-slate-400">
-                        Tambahkan foto untuk memperjelas kondisi di lapangan. Format PNG atau JPG hingga 10MB.
+                      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">{imageFile ? "Ganti foto bukti" : "Unggah bukti foto opsional"}</p>
+                      <p className="mt-2 max-w-md text-xs font-medium leading-relaxed text-slate-400 truncate w-full px-4">
+                        {imageFile ? imageFile.name : "Tambahkan foto untuk memperjelas kondisi di lapangan. Format PNG atau JPG hingga 10MB."}
                       </p>
                       <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-500">
                         <Camera size={14} />
-                        Klik untuk unggah atau seret file
+                        {imageFile ? "Klik untuk ganti file" : "Klik untuk unggah atau seret file"}
                       </div>
                     </div>
                   </div>

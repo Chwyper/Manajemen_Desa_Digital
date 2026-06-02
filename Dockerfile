@@ -10,8 +10,6 @@ RUN npm run build
 FROM maven:3.9.6-eclipse-temurin-21 AS backend-builder
 WORKDIR /app/backend
 COPY pom.xml ./
-COPY mvnw ./
-COPY .mvn ./.mvn
 COPY src ./src
 # Copy React build to Spring Boot static resources
 COPY --from=frontend-builder /app/frontend/dist /app/backend/src/main/resources/static

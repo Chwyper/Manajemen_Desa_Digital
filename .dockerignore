@@ -1,0 +1,10 @@
+node_modules
+dist
+target
+.git
+.mvn
+mvnw
+mvnw.cmd
+*.log
+.env
+uploads

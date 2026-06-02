@@ -1,31 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  ShieldCheck, 
-  ArrowLeft, 
-  Camera, 
-  Edit3, 
-  Lock, 
+import api from "../services/api";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  ShieldCheck,
+  ArrowLeft,
+  Camera,
+  Edit3,
+  Lock,
   CreditCard,
   CheckCircle2,
   Fingerprint,
   Calendar,
   Building,
-  History,      
-  ChevronRight, 
-  TrendingUp    
+  History,
+  ChevronRight,
+  TrendingUp
 } from "lucide-react";
 
 // ─── CONFIGURATION ────────────────────────────────────────────────────────────
 
-const EASE_SPRING = [0.16, 1, 0.3, 1];
+const EASE_SPRING: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-const FADE_UP = {
+const FADE_UP: any = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
     opacity: 1,
@@ -38,17 +39,45 @@ const FADE_UP = {
 
 export default function Profil() {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get('/auth/profile');
+        if (response.data && response.data.data) {
+          setUserData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Gagal mengambil profil:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FDFEFF] flex items-center justify-center font-sans">
+        <p className="text-slate-500 font-bold animate-pulse">Memuat profil warga...</p>
+      </div>
+    );
+  }
+
+  const avatarSeed = userData?.nama_lengkap ? encodeURIComponent(userData.nama_lengkap) : "Budi";
 
   return (
     <div className="min-h-screen bg-[#FDFEFF] font-sans antialiased pb-20">
-      
+
       {/* ── HEADER & COVER ── */}
       <div className="h-64 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-red-900/50 to-indigo-900/50" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-red-600 rounded-full blur-[120px] opacity-20" />
-        
+
         <header className="max-w-6xl mx-auto px-8 pt-8 relative z-10 flex justify-between items-center text-white">
-          <button 
+          <button
             onClick={() => navigate('/dashboard-warga')}
             className="flex items-center gap-3 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
           >
@@ -61,142 +90,149 @@ export default function Profil() {
         </header>
       </div>
 
-      <main className="max-w-5xl mx-auto px-8 -mt-24 relative z-20">
-        
-        {/* ── PROFILE INFO CARD ── */}
-        <motion.div 
-          initial="hidden" animate="visible" variants={FADE_UP} custom={0}
-          className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row items-center md:items-end gap-8"
-        >
-          <div className="relative group">
-            <img 
-              className="w-40 h-40 rounded-[2.5rem] border-8 border-white shadow-xl ring-1 ring-slate-100" 
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Budi" 
-              alt="Avatar" 
-            />
-            <button className="absolute bottom-2 right-2 p-3 bg-red-600 text-white rounded-2xl shadow-lg hover:scale-110 transition-transform">
-              <Camera size={18} strokeWidth={2.5} />
-            </button>
-          </div>
+      <main className="max-w-6xl mx-auto px-8 -mt-24 relative z-20">
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
           
-          <div className="flex-1 text-center md:text-left pb-4">
-            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Budi Santoso</h2>
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 flex items-center gap-1">
-                <ShieldCheck size={12} /> Terverifikasi
-              </span>
-            </div>
-            <p className="text-slate-400 font-bold flex items-center justify-center md:justify-start gap-2">
-              <Fingerprint size={16} /> 3273012903100004
-            </p>
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-10">
-          
-          {/* ── DATA PERSONAL ── */}
-          <motion.div 
-            initial="hidden" animate="visible" variants={FADE_UP} custom={1}
-            className="lg:col-span-2 space-y-8"
+          {/* ── INFORMASI PRIBADI (70%) ── */}
+          <motion.div
+            initial="hidden" animate="visible" variants={FADE_UP} custom={0}
+            className="lg:col-span-7 bg-white rounded-[2.5rem] p-8 lg:p-10 border border-slate-100 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row gap-10"
           >
-            <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-sm">
-              <h3 className="text-xl font-black text-slate-900 tracking-tight mb-8">Informasi Personal</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="space-y-1.5">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Mail size={12} className="text-red-500" /> Email
-                  </p>
-                  <p className="text-sm font-bold text-slate-800">budi.santoso@email.com</p>
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Phone size={12} className="text-red-500" /> WhatsApp
-                  </p>
-                  <p className="text-sm font-bold text-slate-800">+62 812-3456-7890</p>
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Calendar size={12} className="text-red-500" /> Tanggal Lahir
-                  </p>
-                  <p className="text-sm font-bold text-slate-800">12 Maret 1990</p>
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <MapPin size={12} className="text-red-500" /> Alamat KTP
-                  </p>
-                  <p className="text-sm font-bold text-slate-800 leading-relaxed">Jl. Cisaladah No. 42, Kel. Jatimekar</p>
-                </div>
+            
+            {/* Foto Profil Sidebar */}
+            <div className="flex-shrink-0 flex flex-col items-center md:items-start md:w-32 lg:w-40">
+              <h3 className="text-lg font-black text-slate-900 tracking-tight mb-6 md:block hidden text-center md:text-left">Foto Profil</h3>
+              <div className="relative group">
+                <img 
+                  className="w-28 h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-[2rem] border-2 border-dashed border-emerald-400 p-1 object-cover shadow-sm" 
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`}
+                  alt="Avatar" 
+                />
               </div>
             </div>
 
-            {/* ── SECURITY SETTINGS ── */}
-            <div className="bg-slate-50/50 rounded-[3rem] p-10 border border-slate-100">
-              <h3 className="text-lg font-black text-slate-900 tracking-tight mb-6">Keamanan Akun</h3>
-              <div className="space-y-4">
-                {[
-                  { l: "Ubah Kata Sandi", i: Lock, c: "blue" },
-                  { l: "Autentikasi Dua Faktor (2FA)", i: ShieldCheck, c: "emerald" },
-                  { l: "Log Aktivitas Login", i: History, c: "indigo" },
-                ].map((item, idx) => (
-                  <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-100 flex items-center justify-between cursor-pointer hover:border-blue-200 transition-all group">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-xl bg-${item.c}-50 flex items-center justify-center`}>
-                        <item.i size={18} className={`text-${item.c}-600`} />
-                      </div>
-                      <span className="text-[13px] font-bold text-slate-700">{item.l}</span>
-                    </div>
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-red-600 transition-all" />
+            {/* Garis Pemisah Vertical */}
+            <div className="w-full h-px bg-slate-100 md:w-px md:h-auto hidden md:block" />
+
+            {/* Form Informasi Personal */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-black text-slate-900 tracking-tight mb-6">Informasi Personal</h3>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-8 gap-y-8">
+                
+                {/* Nama Lengkap */}
+                <div className="flex gap-4">
+                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-500 flex items-center justify-center shrink-0">
+                    <User size={18} strokeWidth={2.5} />
                   </div>
-                ))}
+                  <div className="flex-1 space-y-2">
+                    <label className="text-[11px] font-bold text-slate-500 ml-1">Nama Lengkap</label>
+                    <div className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-800 text-sm shadow-sm cursor-default">
+                      {userData?.nama_lengkap || "Nama Tidak Ditemukan"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* NIK */}
+                <div className="flex gap-4">
+                  <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                    <Fingerprint size={18} strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <label className="text-[11px] font-bold text-slate-500 ml-1">NIK</label>
+                    <div className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-500 text-sm shadow-sm cursor-not-allowed">
+                      {userData?.nik || "-"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nomor Telepon */}
+                <div className="flex gap-4">
+                  <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                    <Phone size={18} strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <label className="text-[11px] font-bold text-slate-500 ml-1">Nomor Telepon</label>
+                    <div className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-800 text-sm shadow-sm cursor-default">
+                      {userData?.no_hp || "-"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Akun */}
+                <div className="flex gap-4">
+                  <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                    <ShieldCheck size={18} strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <label className="text-[11px] font-bold text-slate-500 ml-1">Status Akun</label>
+                    <div className="w-full px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm shadow-sm cursor-default flex items-center">
+                      <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-md border inline-flex ${
+                        userData?.status_akun === 'VERIFIED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        userData?.status_akun === 'PENDING_ADMIN' || userData?.status_akun === 'PENDING_VERIFICATION' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                        'bg-slate-50 text-slate-600 border-slate-100'
+                      }`}>
+                        {
+                          userData?.status_akun === 'VERIFIED' ? 'Terverifikasi' : 
+                          userData?.status_akun === 'PENDING_ADMIN' ? 'Menunggu Admin' : 
+                          userData?.status_akun || 'Belum Lengkap'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Alamat KTP (Spans 2 columns) */}
+                <div className="flex gap-4 md:col-span-2">
+                  <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                    <MapPin size={18} strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <label className="text-[11px] font-bold text-slate-500 ml-1">Alamat KTP</label>
+                    <div className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-800 text-sm shadow-sm min-h-[5rem] cursor-default leading-relaxed flex items-start">
+                      {userData?.alamat || "Alamat belum diatur"}
+                    </div>
+                  </div>
+                </div>
+                
               </div>
             </div>
           </motion.div>
 
-          {/* ── DATA WILAYAH ── */}
-          <motion.div 
-            initial="hidden" animate="visible" variants={FADE_UP} custom={2}
-            className="space-y-8"
+          {/* ── DATA WILAYAH (30%) ── */}
+          <motion.div
+            initial="hidden" animate="visible" variants={FADE_UP} custom={1}
+            className="lg:col-span-3"
           >
-            <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-xl shadow-slate-900/20">
+            <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-xl shadow-slate-900/20 h-full flex flex-col justify-center">
               <div className="absolute top-0 right-0 w-32 h-32 bg-red-600 rounded-full blur-[60px] opacity-20" />
-              <h3 className="text-xl font-black mb-8 tracking-tight flex items-center gap-3">
+              <h3 className="text-xl font-black mb-8 tracking-tight flex items-center gap-3 relative z-10">
                 <Building size={22} className="text-red-400" strokeWidth={3} /> Wilayah RT/RW
               </h3>
-              
-              <div className="space-y-8">
-                <div className="border-l-2 border-slate-700 pl-6">
-                  <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">Ketua RT 01</p>
-                  <p className="text-sm font-bold mt-1">Bpk. H. Ahmad Subarjo</p>
-                </div>
-                <div className="border-l-2 border-slate-700 pl-6">
-                  <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">Ketua RW 10</p>
-                  <p className="text-sm font-bold mt-1">Bpk. Ir. Mulyadi</p>
-                </div>
-                <div className="border-l-2 border-slate-700 pl-6">
-                  <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">Wilayah Desa</p>
-                  <p className="text-sm font-bold mt-1">Cisaladah Digital</p>
-                </div>
-              </div>
 
-              <div className="mt-12 pt-8 border-t border-white/5">
-                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl">
-                  <CheckCircle2 className="text-emerald-400 shrink-0" size={20} />
-                  <p className="text-[10px] font-medium text-slate-300">Anda tercatat sebagai penduduk aktif di wilayah ini sejak 2018.</p>
+              <div className="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-6 relative z-10 text-sm">
+                
+                {/* Row 1 */}
+                <div className="border-l-2 border-slate-700 pl-5">
+                  <strong className="text-[11px] font-black text-red-400 uppercase tracking-widest">Nomor RT</strong>
                 </div>
-              </div>
-            </div>
+                <div className="text-red-400/50 font-black">:</div>
+                <div className="font-bold">RT {userData?.rt || "-"}</div>
 
-            {/* Badge Card */}
-            <div className="bg-white rounded-[3rem] border border-slate-100 p-10 shadow-sm text-center">
-              <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <CreditCard size={28} strokeWidth={2.5} />
+                {/* Row 2 */}
+                <div className="border-l-2 border-slate-700 pl-5">
+                  <strong className="text-[11px] font-black text-red-400 uppercase tracking-widest">Nomor RW</strong>
+                </div>
+                <div className="text-red-400/50 font-black">:</div>
+                <div className="font-bold">RW {userData?.rw || "-"}</div>
+
+                {/* Row 3 */}
+                <div className="border-l-2 border-slate-700 pl-5">
+                  <strong className="text-[11px] font-black text-red-400 uppercase tracking-widest">Domisili</strong>
+                </div>
+                <div className="text-red-400/50 font-black">:</div>
+                <div className="font-bold">{userData?.status_tinggal || "Belum diatur"}</div>
+
               </div>
-              <h4 className="text-lg font-black text-slate-900 tracking-tight">E-KTP Digital</h4>
-              <p className="text-xs text-slate-500 mt-2 font-medium">QR-Code identitas Anda dapat dipindai oleh petugas desa.</p>
-              <button className="w-full mt-8 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-lg shadow-slate-900/20">
-                Tampilkan QR-Code
-              </button>
             </div>
           </motion.div>
 

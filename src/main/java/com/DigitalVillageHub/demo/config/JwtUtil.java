@@ -14,8 +14,8 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // Dibaca dari environment variable JWT_SECRET 
-    @Value("${JWT_SECRET}")
+    // Dibaca dari environment variable JWT_SECRET dengan default fallback
+    @Value("${JWT_SECRET:kunci_rahasia_default_untuk_desa_digital_sangat_panjang_sekali}")
     private String jwtSecret;
 
     // Default expiration: 24 Jam

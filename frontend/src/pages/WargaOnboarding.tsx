@@ -39,7 +39,8 @@ export default function WargaOnboarding({ userStatus, onVerified }: OnboardingPr
   const checkCurrentStatus = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/v1/auth/profile", {
+      const BASE_URL = import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1';
+      const res = await axios.get(`${BASE_URL}/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
@@ -108,7 +109,8 @@ export default function WargaOnboarding({ userStatus, onVerified }: OnboardingPr
 
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:5000/api/v1/auth/onboarding", data, {
+      const BASE_URL = import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1';
+      const res = await axios.post(`${BASE_URL}/auth/onboarding`, data, {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"

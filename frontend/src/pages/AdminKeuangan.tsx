@@ -55,8 +55,7 @@ export default function AdminKeuangan() {
     transaction_date: new Date().toISOString().split("T")[0],
   });
 
-  // Sesuaikan URL ke port Spring Boot kamu (Ganti ke 8080 jika Java kamu pakai port default)
-  const BASE_URL = "http://localhost:5000/api/v1/admin/finance"; 
+  const BASE_URL = import.meta.env.PROD ? '/api/v1/admin/finance' : 'http://localhost:5000/api/v1/admin/finance';
 
   const fetchFinanceData = async () => {
     try {
@@ -496,7 +495,7 @@ export default function AdminKeuangan() {
                   <p className="text-sm font-semibold text-slate-600 mb-4">Bukti kuitansi digital</p>
                   <div className="flex-1 min-h-[280px] rounded-2xl border border-slate-200 bg-slate-200 overflow-hidden relative">
                     {(selectedTrx.evidence_url || selectedTrx.evidenceUrl) ? (
-                      <img src={`http://localhost:5000${selectedTrx.evidence_url || selectedTrx.evidenceUrl}`} className="w-full h-full object-cover" alt="Receipt" />
+                      <img src={import.meta.env.PROD ? (selectedTrx.evidence_url || selectedTrx.evidenceUrl) : `http://localhost:5000${selectedTrx.evidence_url || selectedTrx.evidenceUrl}`} className="w-full h-full object-cover" alt="Receipt" />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-3">
                         <ImageIcon size={38} />

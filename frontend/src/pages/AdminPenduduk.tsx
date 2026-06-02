@@ -61,7 +61,8 @@ export default function AdminPenduduk() {
   const fetchPenduduk = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/v1/admin/penduduk", {
+      const BASE_URL = import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1';
+      const res = await axios.get(`${BASE_URL}/admin/penduduk`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -85,8 +86,9 @@ export default function AdminPenduduk() {
 
     try {
       const token = localStorage.getItem("token");
+      const BASE_URL = import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1';
       const res = await axios.post(
-        "http://localhost:5000/api/v1/admin/penduduk",
+        `${BASE_URL}/admin/penduduk`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -98,7 +100,7 @@ export default function AdminPenduduk() {
       }
     } catch (error: any) {
       alert(error.response?.data?.message || "Gagal menambah warga");
-    } finally { // <-- FIXED TYPO DI SINI
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -126,8 +128,9 @@ export default function AdminPenduduk() {
 
     try {
       const token = localStorage.getItem("token");
+      const BASE_URL = import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1';
       const res = await axios.put(
-        `http://localhost:5000/api/v1/admin/penduduk/${selectedPenduduk.id}`,
+        `${BASE_URL}/admin/penduduk/${selectedPenduduk.id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -139,7 +142,7 @@ export default function AdminPenduduk() {
       }
     } catch (error: any) {
       alert(error.response?.data?.message || "Gagal memperbarui data warga");
-    } finally { // <-- FIXED TYPO DI SINI
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -159,9 +162,10 @@ export default function AdminPenduduk() {
     try {
       const token = localStorage.getItem("token");
       const targetStatus = action === "ACC" ? "VERIFIED" : "DATA_REJECTED";
+      const BASE_URL = import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1';
 
       const res = await axios.put(
-        `http://localhost:5000/api/v1/admin/penduduk/${id}/verifikasi`,
+        `${BASE_URL}/admin/penduduk/${id}/verifikasi`,
         {
           statusAkun: targetStatus,
           alasanDitolak: action === "REJECT" ? alasanTolak : null,
@@ -188,7 +192,8 @@ export default function AdminPenduduk() {
     if (window.confirm("Yakin ingin menghapus data warga ini?")) {
       try {
         const token = localStorage.getItem("token");
-        await axios.delete(`http://localhost:5000/api/v1/admin/penduduk/${id}`, {
+        const BASE_URL = import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1';
+        await axios.delete(`${BASE_URL}/admin/penduduk/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -718,7 +723,7 @@ export default function AdminPenduduk() {
                     <div className="w-full min-h-[220px] rounded-2xl border border-slate-200 bg-slate-200 overflow-hidden relative flex items-center justify-center">
                       {selectedPenduduk.foto_ktp ? (
                         <img
-                          src={`http://localhost:5000/${selectedPenduduk.foto_ktp}`}
+                          src={import.meta.env.PROD ? `/${selectedPenduduk.foto_ktp}` : `http://localhost:5000/${selectedPenduduk.foto_ktp}`}
                           className="w-full h-auto max-h-[260px] object-cover rounded-2xl"
                           alt="Berkas KTP Warga"
                           onError={(e) => {

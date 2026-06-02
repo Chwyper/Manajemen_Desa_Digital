@@ -269,7 +269,7 @@ const DetailModal = ({
             <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Bukti Transaksi Fisik</p>
             <div className="aspect-[4/3] w-full rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative shadow-sm">
               {evidenceUrl ? (
-                <img src={`http://localhost:5000${evidenceUrl}`} className="w-full h-full object-cover" alt="Kuitansi Desa" />
+                <img src={import.meta.env.PROD ? evidenceUrl : `http://localhost:5000${evidenceUrl}`} className="w-full h-full object-cover" alt="Kuitansi Desa" />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2">
                   <ImageIcon size={32} />
@@ -280,7 +280,7 @@ const DetailModal = ({
           </div>
 
           {evidenceUrl && (
-            <a href={`http://localhost:5000${evidenceUrl}`} target="_blank" rel="noreferrer" className="w-full py-4 bg-slate-900 hover:bg-red-600 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl text-center shadow-md transition-all mt-6">
+            <a href={import.meta.env.PROD ? evidenceUrl : `http://localhost:5000${evidenceUrl}`} target="_blank" rel="noreferrer" className="w-full py-4 bg-slate-900 hover:bg-red-600 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl text-center shadow-md transition-all mt-6">
               Buka Lampiran Nota
             </a>
           )}

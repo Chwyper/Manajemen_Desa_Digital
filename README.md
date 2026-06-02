@@ -1,3 +1,11 @@
+---
+title: Digital Desa
+emoji: 🏢
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
 # 🏛️ Digital Village Hub (Desa Digital)
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.5-brightgreen.svg)](https://spring.io/projects/spring-boot)

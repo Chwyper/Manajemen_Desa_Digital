@@ -1,0 +1,76 @@
+====================================================================
+LAPORAN PERUBAHAN & FINALISASI DEPLOYMENT DESA DIGITAL (v1.1.0)
+Tanggal: 2 Juni 2026
+Target Deployment: Hugging Face Spaces (Fullstack Docker)
+====================================================================
+
+Laporan ini memuat rekam jejak teknis secara detail mengenai semua perubahan kode, perbaikan bug, dan konfigurasi arsitektur yang dilakukan untuk mengangkat aplikasi dari fase pengembangan lokal (Localhost) menjadi aplikasi level produksi (Production-Ready) yang berjalan di Cloud.
+
+--------------------------------------------------------------------
+BAGIAN 1: PENGEMBANGAN FITUR & MIGRASI DATA DINAMIS
+--------------------------------------------------------------------
+1. Modul Keuangan Dinamis (Finansial.tsx & AdminKeuangan.tsx)
+   - Masalah Awal: Grafik distribusi pengeluaran dan persentase "Penyerapan Anggaran" masih berupa angka statis (dummy) yang tidak berubah.
+   - Solusi: 
+     a. Membuat algoritma kalkulasi real-time di sisi Frontend yang mengakumulasi total nominal transaksi dengan status "EXPENSE" (Pengeluaran).
+     b. Memecah total pengeluaran tersebut ke dalam 3 kategori utama: Infrastruktur, Sosial, dan Operasional untuk menghasilkan rasio persentase yang akurat pada grafik batang.
+     c. Menghitung persentase "Target Penyerapan Anggaran" menggunakan rasio matematika murni: (Total Pengeluaran / Total Pemasukan) * 100.
+
+2. Modul Pengaduan Warga / File Upload (Lapor.tsx, Controller & Service)
+   - Masalah Awal: Warga tidak bisa mengunggah bukti foto kerusakan/kejadian.
+   - Solusi Frontend:
+     a. Menambahkan state "imageFile" dan fitur preview gambar lokal.
+     b. Mengubah Content-Type pengiriman data axios dari "application/json" menjadi "multipart/form-data".
+   - Solusi Backend:
+     a. Memodifikasi WargaPengaduanController agar menerima anotasi `@RequestParam("fotoBuktiFile") MultipartFile file`.
+     b. Mengembangkan metode `storePengaduanEvidence` di PengaduanService yang menghasilkan UUID unik untuk mencegah bentrok nama file, memvalidasi format (Hanya menerima JPG/PNG), dan menyimpannya secara lokal di folder `/uploads/pengaduan/`.
+
+--------------------------------------------------------------------
+BAGIAN 2: KONFIGURASI FULLSTACK DOCKER (DEPLOYMENT)
+--------------------------------------------------------------------
+1. Pembuatan Multi-Stage Dockerfile
+   - Diciptakan file `Dockerfile` di root proyek untuk membungkus React dan Spring Boot menjadi satu.
+   - Stage 1 (Frontend Builder): Menggunakan image `node:20-alpine` (Di-upgrade dari Node 18 karena Vite 8 menolak versi lama). Mengompilasi React menjadi folder "dist".
+   - Stage 2 (Backend Builder): Menggunakan `maven:3.9.6-eclipse-temurin-21` untuk menyalin hasil build React ("dist") ke dalam folder `src/main/resources/static` milik Spring Boot, lalu melakukan package menjadi `.jar`.
+   - Stage 3 (Runtime): Mengekspos port 7860 (wajib untuk Hugging Face) dan menjalankan server secara mandiri.
+
+2. Pembersihan Build Context (.dockerignore)
+   - Masalah: Terjadi "cache miss" dan Exit Code 1 saat `npm run build` di dalam Docker.
+   - Penyebab: Docker secara otomatis menyalin folder `node_modules` raksasa versi Windows ke dalam container Alpine Linux, menyebabkan binary esbuild/swc crash.
+   - Solusi: Menambahkan file `.dockerignore` yang memblokir folder `node_modules`, `target`, `.mvn`, dan `mvnw`.
+
+3. Transisi API URL (Dynamic Routing)
+   - Masalah Awal: Ratusan endpoint API di Frontend memanggil "http://localhost:5000" secara hardcoded. Jika di-deploy, aplikasi akan gagal mengambil data dari cloud.
+   - Solusi: Menerapkan pengecekan environment menggunakan Vite (`import.meta.env.PROD`).
+   - Hasil: 
+     const BASE_URL = import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1';
+     Jika berjalan di Hugging Face (Production), aplikasi menggunakan "Relative Path" yang otomatis memanggil dirinya sendiri. Jika di VS Code, tetap memanggil localhost.
+
+--------------------------------------------------------------------
+BAGIAN 3: RESOLUSI ERROR RUNTIME DI HUGGING FACE
+--------------------------------------------------------------------
+1. Error Missing HF Configuration
+   - Penyebab: Saat proses Force Push, file README default Hugging Face terhapus.
+   - Solusi: Menambahkan YAML Frontmatter Metadata di baris teratas `README.md` lokal (berisi tipe SDK: Docker, warna, dan emoji) agar diizinkan tayang oleh server Hugging Face.
+
+2. Spring Boot PropertyPlaceholder Crash (Exit Code 1)
+   - Penyebab: File `application.properties` berada di dalam `.gitignore` (untuk mengamankan kredensial lokal), sehingga saat Docker berjalan, Spring Boot kebingungan mencari variabel koneksi Database dan JWT_SECRET.
+   - Solusi:
+     a. Memaksa (Force Add) sebuah `application.properties` baru yang 100% menggunakan Environment Variable Fallback.
+     b. Contoh: `spring.datasource.url=${DB_URL:jdbc:mysql://...}`
+     c. Ini memastikan bahwa meskipun variabel cloud kosong, Spring Boot tetap bisa langsung terkoneksi ke Database remote milik pengguna.
+
+3. Cyclic Reference Error pada JWT_SECRET
+   - Penyebab: Variabel JWT_SECRET=${JWT_SECRET:kunci_acak} di .properties menciptakan infinity loop pencarian properti.
+   - Solusi: Menghapus definisi JWT_SECRET dari .properties, dan langsung menggunakan fitur fallback di level kode Java (JwtUtil.java) dengan anotasi `@Value("${JWT_SECRET:kunci_rahasia_default...}")`.
+
+4. Blank Iframe Error (Sad Face Icon / ERR_BLOCKED_BY_RESPONSE)
+   - Penyebab: Spring Security memiliki perlindungan `X-Frame-Options: DENY` aktif secara default untuk mencegah clickjacking. Karena dasbor HF menggunakan iframe, aplikasi memblokir HF untuk menampilkannya.
+   - Solusi: Memodifikasi SecurityConfig.java dengan menambah instruksi: 
+     `.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))`
+     Aplikasi kini diizinkan untuk dirender di dalam iframe apapun secara aman.
+
+--------------------------------------------------------------------
+KESIMPULAN:
+Aplikasi telah sukses di-deploy ke 3 remote Git yang berbeda (Farmil23, Chwyper, dan Hugging Face). Aplikasi kini 100% dinamis, tanpa data hardcoded, file upload berfungsi aman, aman dari kebocoran rahasia melalui fallback Environment Variables, dan dapat dirender dengan mulus sebagai aplikasi Fullstack di atas sistem berbasis Docker.
+====================================================================

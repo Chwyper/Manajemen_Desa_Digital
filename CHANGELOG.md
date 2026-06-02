@@ -1,5 +1,14 @@
 # Release Notes - Finalisasi Desa Digital (v1.0-RC)
 
+## 🚀 Deployment & Production Ready (v1.1.0)
+- **Full-stack Dockerization**: Ditambahkan `Dockerfile` multi-stage untuk menggabungkan React (Frontend) dan Spring Boot (Backend) menjadi satu artefak `.jar`.
+- **Hugging Face Spaces Support**: Konfigurasi khusus Hugging Face Spaces (`server.port=7860`), modifikasi keamanan Spring Security untuk mengizinkan iframe embedding (`X-Frame-Options: DISABLE`), dan metadata konfigurasi UI Hugging Face.
+- **Dynamic API Routing**: Modifikasi axios base URL pada seluruh file frontend (`api.ts`, `WargaOnboarding.tsx`, `Finansial.tsx`, dsb) untuk menggunakan *relative path* (`/api/v1`) pada saat production, dan fallback ke `localhost:5000` di lokal.
+- **Environment Fallbacks**: Penambahan file konfigurasi `application.properties` default dengan pemanggilan Environment Variables (untuk DB & JWT) untuk mendukung runtime Docker di cloud tanpa kredensial sensitif yang *hardcoded*.
+- **Dockerignore**: Penambahan `.dockerignore` untuk mencegah kebocoran *build context* (seperti `node_modules` versi Windows) ke dalam proses kompilasi container berbasis Linux Alpine.
+
+---
+
 Pembaruan ini berfokus pada transisi dari *mock-data* ke *real-time data* serta penyelesaian alur fitur penting seperti laporan pengaduan warga.
 
 ## 🚀 Fitur Baru & Peningkatan (Enhancements)

@@ -122,6 +122,7 @@ public class AuthService {
         data.put("id", user.getId());
         data.put("nik", user.getNik());
         data.put("nama_lengkap", user.getNamaLengkap());
+        data.put("no_hp", user.getNoHp());
         data.put("username", user.getUsername());
         data.put("role", user.getRole() != null ? user.getRole().name() : null);
         data.put("status_akun", user.getStatusAkun());
